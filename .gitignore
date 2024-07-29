@@ -1,0 +1,20 @@
+# Конфигурационные файлы и секреты
+appsettings.json
+appsettings.Development.json
+
+# Каталоги сборок
+bin/
+obj/
+
+# Файлы IDE и среды разработки
+.vs/
+.vscode/
+.idea/
+
+# Файлы, связанные с Docker
+docker-compose.override.yml
+*.env
+
+# Файлы среды
+.env
+.env.*
