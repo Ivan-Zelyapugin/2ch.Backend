@@ -1,5 +1,5 @@
-﻿using _2ch.Application.Interfaces.DbConnection;
-using _2ch.Application.Interfaces.Repositories;
+﻿using _2ch.Application.DbConnection;
+using _2ch.Application.Repositories;
 using Dapper;
 using DomainThread = _2ch.Domain.Entities.Thread;
 
@@ -12,53 +12,53 @@ namespace _2ch.Persistence.Repositories
         public ThreadRepository(IDbConnectionFactory connectionFactory) =>
             _connectionFactory = connectionFactory;
 
-        public async Task<IEnumerable<DomainThread>> GetAllThreads(Guid boardId)
+        public async Task<IEnumerable<DomainThread>> GetAllThreadsAsync()
         {
-            var query = "SELECT * FROM Threads WHERE \"BoardId\" = @BoardId";
+            var sql = "SELECT * FROM thread";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                return await connection.QueryAsync<DomainThread>(query, new { BoardId = boardId });
+                return await connection.QueryAsync<DomainThread>(sql);
             }
         }
 
-        public async Task<DomainThread> GetThreadById(Guid id)
+        public async Task<DomainThread> GetThreadByIdAsync(Guid threadId)
         {
-            var query = "SELECT * FROM Threads WHERE \"Id\" = @Id";
+            var query = "SELECT * FROM thread WHERE \"ThreadId\" = @ThreadId";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                return await connection.QuerySingleOrDefaultAsync<DomainThread>(query, new { Id = id });
+                return await connection.QuerySingleOrDefaultAsync<DomainThread>(query, new { ThreadId = threadId });
             }
         }
 
-        public async Task CreateThread(DomainThread thread)
+        public async Task AddThreadAsync(DomainThread threadId)
         {
-            var query = @"
-                INSERT INTO Threads (""BoardId"", ""Title"", ""Content"", ""CreatedAt"")
-                VALUES (@BoardId, @Title, @Content, @CreatedAt)";
+            var sql = @"
+                INSERT INTO thread (""ThreadId"", ""BoardId"", ""Title"", ""Content"", ""CreatedAt"")
+                VALUES (@ThreadId, @BoardId, @Title, @Content, @CreatedAt)";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                await connection.ExecuteAsync(query, thread);
+                await connection.ExecuteAsync(sql, threadId);
             }
         }
 
-        public async Task UpdateThread(DomainThread thread)
+        public async Task UpdateThreadAsync(DomainThread threadId)
         {
-            var query = @"
-                UPDATE Threads
+            var sql = @"
+                UPDATE thread
                 SET ""Title"" = @Title, ""Content"" = @Content, ""CreatedAt"" = @CreatedAt
-                WHERE ""Id"" = @Id";
+                WHERE ""ThreadId"" = @ThreadId";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                await connection.ExecuteAsync(query, thread);
+                await connection.ExecuteAsync(sql, threadId);
             }
         }
 
-        public async Task DeleteThread(Guid id)
+        public async Task DeleteThreadAsync(Guid threadId)
         {
-            var query = "DELETE FROM Threads WHERE Id = @Id";
+            var sql = "DELETE FROM thread WHERE \"ThreadId\" = @ThreadId";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                await connection.ExecuteAsync(query, new { Id = id });
+                await connection.ExecuteAsync(sql, new { ThreadId = threadId });
             }
         }    
     }

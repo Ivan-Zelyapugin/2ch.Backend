@@ -1,4 +1,5 @@
-﻿using _2ch.Application.Interfaces.UnitOfWork;
+﻿using _2ch.Application.DTOs;
+using _2ch.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using DomainThread = _2ch.Domain.Entities.Thread;
 
@@ -8,49 +9,47 @@ namespace _2ch.WebApi.Controllers
     [ApiController]
     public class ThreadsController : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IThreadService _threadService;
 
-        public ThreadsController(IUnitOfWork unitOfWork) =>
-            _unitOfWork = unitOfWork;
+        public ThreadsController(IThreadService threadService) =>
+            _threadService = threadService;
 
-        [HttpGet("{boardId}")]
-        public async Task<IActionResult> GetThreads(Guid boardId)
+        [HttpGet]
+        public async Task<IActionResult> GetAllThreads()
         {
-            var threads = await _unitOfWork.Threads.GetAllThreads(boardId);
+            var threads = await _threadService.GetAllThreadsAsync();
             return Ok(threads);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetThread(Guid id)
+        public async Task<IActionResult> GetThreadById(Guid id)
         {
-            var thread = await _unitOfWork.Threads.GetThreadById(id);
+            var thread = await _threadService.GetThreadByIdAsync(id);
             if (thread == null)
+            {
                 return NotFound();
-
+            }
             return Ok(thread);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateThread(DomainThread thread)
+        public async Task<IActionResult> AddThread(ThreadDto threadDto)
         {
-            await _unitOfWork.Threads.CreateThread(thread);
-            return CreatedAtAction(nameof(GetThread), new { id = thread.Id }, thread);
+            await _threadService.AddThreadAsync(threadDto);
+            return Ok(threadDto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateThread(Guid id, DomainThread thread)
+        public async Task<IActionResult> UpdateThread(Guid id, ThreadDto threadDto)
         {
-            if (id != thread.Id)
-                return BadRequest();
-
-            await _unitOfWork.Threads.UpdateThread(thread);
+            await _threadService.UpdateThreadAsync(threadDto);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteThread(Guid id)
         {
-            await _unitOfWork.Threads.DeleteThread(id);
+            await _threadService.DeleteThreadAsync(id);
             return NoContent();
         }
     }

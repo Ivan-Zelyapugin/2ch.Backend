@@ -1,4 +1,5 @@
-﻿using _2ch.Application.Interfaces.UnitOfWork;
+﻿using _2ch.Application.DTOs;
+using _2ch.Application.Interfaces;
 using _2ch.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,22 +9,22 @@ namespace _2ch.WebApi.Controllers
     [ApiController]
     public class CommentsController : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ICommentService _commentService;
 
-        public CommentsController(IUnitOfWork unitOfWork) =>
-            _unitOfWork = unitOfWork;
+        public CommentsController(ICommentService commentService) =>
+            _commentService = commentService;
 
-        [HttpGet("{threadId}")]
-        public async Task<IActionResult> GetComments(Guid threadId)
+        [HttpGet]
+        public async Task<IActionResult> GetComments()
         {
-            var comments = await _unitOfWork.Comments.GetAllComments(threadId);
+            var comments = await _commentService.GetAllCommentAsync();
             return Ok(comments);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetComment(Guid id)
         {
-            var comment = await _unitOfWork.Comments.GetCommentById(id);
+            var comment = await _commentService.GetCommentByIdAsync(id);
             if (comment == null)
                 return NotFound();
 
@@ -31,26 +32,23 @@ namespace _2ch.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateComment(Comment comment)
+        public async Task<IActionResult> AddComment(CommentDTO commentDTO)
         {
-            await _unitOfWork.Comments.CreateComment(comment);
-            return CreatedAtAction(nameof(GetComment), new { id = comment.Id }, comment);
+            await _commentService.AddCommentAsync(commentDTO);
+            return Ok(commentDTO);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateComment(Guid id, Comment comment)
+        public async Task<IActionResult> UpdateComment(Guid id, CommentDTO commentDTO)
         {
-            if (id != comment.Id)
-                return BadRequest();
-
-            await _unitOfWork.Comments.UpdateComment(comment);
+            await _commentService.UpdateCommentAsync(commentDTO);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComment(Guid id)
         {
-            await _unitOfWork.Comments.DeleteComment(id);
+            await _commentService.DeleteAsync(id);
             return NoContent();
         }
     }

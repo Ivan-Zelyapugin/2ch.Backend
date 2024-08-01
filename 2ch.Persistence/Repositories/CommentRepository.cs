@@ -1,5 +1,5 @@
-﻿using _2ch.Application.Interfaces.DbConnection;
-using _2ch.Application.Interfaces.Repositories;
+﻿using _2ch.Application.DbConnection;
+using _2ch.Application.Repositories;
 using _2ch.Domain.Entities;
 using Dapper;
 
@@ -12,53 +12,53 @@ namespace _2ch.Persistence.Repositories
         public CommentRepository(IDbConnectionFactory connectionFactory) =>
             _connectionFactory = connectionFactory;
 
-        public async Task<IEnumerable<Comment>> GetAllComments(Guid threadId)
+        public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
         {
-            var query = "SELECT * FROM Comments WHERE \"ThreadId\" = @ThreadId";
+            var sql = "SELECT * FROM comment";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                return await connection.QueryAsync<Comment>(query, new { ThreadId = threadId });
+                return await connection.QueryAsync<Comment>(sql);
             }
         }
 
-        public async Task<Comment> GetCommentById(Guid id)
+        public async Task<Comment> GetCommentByIdAsync(Guid commentId)
         {
-            var query = "SELECT * FROM Comments WHERE \"Id\" = @Id";
+            var sql = "SELECT * FROM comment WHERE \"CommentId \" = @CommentId ";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                return await connection.QuerySingleOrDefaultAsync<Comment>(query, new { Id = id });
+                return await connection.QuerySingleOrDefaultAsync<Comment>(sql, new { CommentId = commentId });
             }
         }
 
-        public async Task CreateComment(Comment comment)
+        public async Task AddCommentAsync(Comment comment)
         {
-            var query = @"
-                INSERT INTO Comments (ThreadId, ParentCommentId, Content, CreatedAt)
-                VALUES (@ThreadId, @ParentCommentId, @Content, @CreatedAt)";
+            var sql = @"
+                INSERT INTO comment (""CommentId"", ""ThreadId"", ""Content"", ""CreatedAt"")
+                VALUES (@CommentId, @ThreadId, @Content, @CreatedAt)";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                await connection.ExecuteAsync(query, comment);
+                await connection.ExecuteAsync(sql, comment);
             }
         }
 
-        public async Task UpdateComment(Comment comment)
+        public async Task UpdateCommentAsync(Comment comment)
         {
-            var query = @"
-                UPDATE Comments
-                SET Content = @Content, CreatedAt = @CreatedAt
-                WHERE Id = @Id";
+            var sql = @"
+                UPDATE comment
+                SET ""Content"" = @Content, ""CreatedAt"" = @CreatedAt
+                WHERE ""CommentId"" = @CommentId";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                await connection.ExecuteAsync(query, comment);
+                await connection.ExecuteAsync(sql, comment);
             }
         }
 
-        public async Task DeleteComment(Guid id)
+        public async Task DeleteCommentAsync(Guid commentId)
         {
-            var query = "DELETE FROM Comments WHERE Id = @Id";
+            var sql = "DELETE FROM comment WHERE \"CommentId\" = @CommentId";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                await connection.ExecuteAsync(query, new { Id = id });
+                await connection.ExecuteAsync(sql, new { CommentId = commentId });
             }
         }   
     }

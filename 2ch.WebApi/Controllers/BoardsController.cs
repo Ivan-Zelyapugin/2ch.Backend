@@ -1,4 +1,5 @@
-﻿using _2ch.Application.Interfaces.UnitOfWork;
+﻿using _2ch.Application.DTOs;
+using _2ch.Application.Interfaces;
 using _2ch.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,48 +9,45 @@ namespace _2ch.WebApi.Controllers
     [ApiController]
     public class BoardsController : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        public BoardsController(IUnitOfWork unitOfWork) =>
-            _unitOfWork = unitOfWork;
+        private readonly IBoardService _boardService;
+        public BoardsController(IBoardService boardService) =>
+            _boardService = boardService;
 
         [HttpGet]
-        public async Task<IActionResult> GetBoards()
+        public async Task<IActionResult> GetAllBoards()
         {
-            var boards = await _unitOfWork.Boards.GetAllBoards();
+            var boards = await _boardService.GetAllBoardsAsync();
             return Ok(boards);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBoard(Guid id)
+        public async Task<IActionResult> GetBoardById(Guid id)
         {
-            var board = await _unitOfWork.Boards.GetBoardById(id);
+            var board = await _boardService.GetBoardByIdAsync(id);
             if (board == null)
+            {
                 return NotFound();
-
+            }
             return Ok(board);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBoard(Board board)
+        public async Task<IActionResult> AddBoard(BoardDto boardDto)
         {
-            await _unitOfWork.Boards.CreateBoard(board);
-            return CreatedAtAction(nameof(GetBoard), new { id = board.Id }, board);
-        }
+            await _boardService.AddBoardAsync(boardDto);
+            return Ok(boardDto);        }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBoard(Guid id, Board board)
+        public async Task<IActionResult> UpdateBoard(Guid id, BoardDto boardDto)
         {
-            if (id != board.Id)
-                return BadRequest();
-
-            await _unitOfWork.Boards.UpdateBoard(board);
+            await _boardService.UpdateBoardAsync(boardDto);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBoard(Guid id)
         {
-            await _unitOfWork.Boards.DeleteBoard(id);
+            await _boardService.DeleteBoardAsync(id);
             return NoContent();
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace _2ch.Application.Interfaces.DbConnection
+namespace _2ch.Application.DbConnection
 {
     public interface IDbConnectionFactory
     {

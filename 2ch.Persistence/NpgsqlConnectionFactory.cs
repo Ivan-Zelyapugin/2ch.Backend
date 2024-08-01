@@ -1,4 +1,4 @@
-﻿using _2ch.Application.Interfaces.DbConnection;
+﻿using _2ch.Application.DbConnection;
 using Npgsql;
 using System.Data;
 
