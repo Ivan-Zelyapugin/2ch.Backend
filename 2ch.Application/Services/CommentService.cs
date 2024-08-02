@@ -22,7 +22,6 @@ namespace _2ch.Application.Services
             var posts = await _commentRepository.GetAllCommentsAsync();
             return posts.Select(p => new CommentDTO
             {
-                ThreadId = p.ThreadId,
                 Content = p.Content,
                 CreatedAt = p.CreatedAt
             });
@@ -37,29 +36,28 @@ namespace _2ch.Application.Services
             }
             return new CommentDTO
             {
-                ThreadId = post.ThreadId,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt
             };
         }
 
-        public async Task AddCommentAsync(CommentDTO postDto)
+        public async Task AddCommentAsync(Guid id, CommentDTO postDto)
         {
             var post = new Comment
             {
                 CommentId = Guid.NewGuid(),
-                ThreadId = postDto.ThreadId,
+                ThreadId = id,
                 Content = postDto.Content,
                 CreatedAt = postDto.CreatedAt
             };
             await _commentRepository.AddCommentAsync(post);
         }
 
-        public async Task UpdateCommentAsync(CommentDTO postDto)
+        public async Task UpdateCommentAsync(Guid id, CommentDTO postDto)
         {
             var post = new Comment
             {
-                ThreadId = postDto.ThreadId,
+                CommentId = id,
                 Content = postDto.Content,
                 CreatedAt = postDto.CreatedAt
             };

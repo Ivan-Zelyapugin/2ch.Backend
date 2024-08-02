@@ -40,7 +40,7 @@ namespace _2ch.WebApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBoard(Guid id, BoardDto boardDto)
         {
-            await _boardService.UpdateBoardAsync(boardDto);
+            await _boardService.UpdateBoardAsync(id, boardDto);
             return NoContent();
         }
 

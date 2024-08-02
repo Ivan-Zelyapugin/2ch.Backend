@@ -1,7 +1,6 @@
 ﻿using _2ch.Application.DTOs;
 using _2ch.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using DomainThread = _2ch.Domain.Entities.Thread;
 
 namespace _2ch.WebApi.Controllers
 {
@@ -33,16 +32,16 @@ namespace _2ch.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddThread(ThreadDto threadDto)
+        public async Task<IActionResult> AddThread(Guid id, ThreadDto threadDto)
         {
-            await _threadService.AddThreadAsync(threadDto);
+            await _threadService.AddThreadAsync(id, threadDto);
             return Ok(threadDto);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateThread(Guid id, ThreadDto threadDto)
         {
-            await _threadService.UpdateThreadAsync(threadDto);
+            await _threadService.UpdateThreadAsync(id, threadDto);
             return NoContent();
         }
 

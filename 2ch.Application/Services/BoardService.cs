@@ -52,10 +52,11 @@ namespace _2ch.Application.Services
             await _boardRepository.AddBoardAsync(board);
         }
 
-        public async Task UpdateBoardAsync(BoardDto boardDto)
+        public async Task UpdateBoardAsync(Guid id, BoardDto boardDto)
         {
             var board = new Board
             {
+                BoardId = id,
                 Name = boardDto.Name,
                 Description = boardDto.Description
             };

@@ -1,4 +1,5 @@
 ﻿using _2ch.Application.DbConnection;
+using _2ch.Application.DTOs;
 using _2ch.Application.Repositories;
 using Dapper;
 using DomainThread = _2ch.Domain.Entities.Thread;
@@ -30,18 +31,18 @@ namespace _2ch.Persistence.Repositories
             }
         }
 
-        public async Task AddThreadAsync(DomainThread threadId)
+        public async Task AddThreadAsync(DomainThread thread)
         {
             var sql = @"
                 INSERT INTO thread (""ThreadId"", ""BoardId"", ""Title"", ""Content"", ""CreatedAt"")
                 VALUES (@ThreadId, @BoardId, @Title, @Content, @CreatedAt)";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                await connection.ExecuteAsync(sql, threadId);
+                await connection.ExecuteAsync(sql, thread);
             }
         }
 
-        public async Task UpdateThreadAsync(DomainThread threadId)
+        public async Task UpdateThreadAsync(DomainThread thread)
         {
             var sql = @"
                 UPDATE thread
@@ -49,7 +50,7 @@ namespace _2ch.Persistence.Repositories
                 WHERE ""ThreadId"" = @ThreadId";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                await connection.ExecuteAsync(sql, threadId);
+                await connection.ExecuteAsync(sql, thread);
             }
         }
 

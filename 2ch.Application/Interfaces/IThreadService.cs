@@ -11,8 +11,8 @@ namespace _2ch.Application.Interfaces
     {
         Task<IEnumerable<ThreadDto>> GetAllThreadsAsync();
         Task<ThreadDto> GetThreadByIdAsync(Guid threadId);
-        Task AddThreadAsync(ThreadDto threadDto);
-        Task UpdateThreadAsync(ThreadDto threadDto);
+        Task AddThreadAsync(Guid id, ThreadDto threadDto);
+        Task UpdateThreadAsync(Guid id, ThreadDto threadDto);
         Task DeleteThreadAsync(Guid threadId);
     }
 }

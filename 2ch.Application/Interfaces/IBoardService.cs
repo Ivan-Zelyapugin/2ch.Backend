@@ -7,7 +7,7 @@ namespace _2ch.Application.Interfaces
         Task<IEnumerable<BoardDto>> GetAllBoardsAsync();
         Task<BoardDto> GetBoardByIdAsync(Guid boardId);
         Task AddBoardAsync(BoardDto boardDto);
-        Task UpdateBoardAsync(BoardDto boardDto);
+        Task UpdateBoardAsync(Guid id, BoardDto boardDto);
         Task DeleteBoardAsync(Guid boardId);
     }
 }

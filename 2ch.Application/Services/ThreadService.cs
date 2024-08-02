@@ -17,7 +17,6 @@ namespace _2ch.Application.Services
             var threads = await _threadRepository.GetAllThreadsAsync();
             return threads.Select(t => new ThreadDto
             {
-                BoardId = t.BoardId,
                 Title = t.Title,
                 Content = t.Content,
                 CreatedAt = t.CreatedAt
@@ -33,19 +32,18 @@ namespace _2ch.Application.Services
             }
             return new ThreadDto
             {
-                BoardId = thread.BoardId,
                 Title = thread.Title,
                 Content = thread.Content,
                 CreatedAt = thread.CreatedAt
             };
         }
 
-        public async Task AddThreadAsync(ThreadDto threadDto)
+        public async Task AddThreadAsync(Guid id, ThreadDto threadDto)
         {
             var thread = new DomainTread
             {
                 ThreadId = Guid.NewGuid(),
-                BoardId = threadDto.BoardId,
+                BoardId = id,
                 Title = threadDto.Title,
                 Content = threadDto.Content,
                 CreatedAt = threadDto.CreatedAt
@@ -53,11 +51,11 @@ namespace _2ch.Application.Services
             await _threadRepository.AddThreadAsync(thread);
         }
 
-        public async Task UpdateThreadAsync(ThreadDto threadDto)
+        public async Task UpdateThreadAsync(Guid id, ThreadDto threadDto)
         {
             var thread = new DomainTread
             {
-                BoardId = threadDto.BoardId,
+                ThreadId = id,
                 Title = threadDto.Title,
                 Content = threadDto.Content,
                 CreatedAt = threadDto.CreatedAt

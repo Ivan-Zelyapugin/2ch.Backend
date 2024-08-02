@@ -32,16 +32,16 @@ namespace _2ch.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddComment(CommentDTO commentDTO)
+        public async Task<IActionResult> AddComment(Guid id, CommentDTO commentDTO)
         {
-            await _commentService.AddCommentAsync(commentDTO);
+            await _commentService.AddCommentAsync(id, commentDTO);
             return Ok(commentDTO);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateComment(Guid id, CommentDTO commentDTO)
         {
-            await _commentService.UpdateCommentAsync(commentDTO);
+            await _commentService.UpdateCommentAsync(id, commentDTO);
             return NoContent();
         }
 
