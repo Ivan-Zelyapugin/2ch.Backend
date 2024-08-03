@@ -34,7 +34,12 @@ namespace _2ch.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddComment(Guid id, CommentDTO commentDTO)
         {
-            await _commentService.AddCommentAsync(id, commentDTO);
+            if (!Request.Cookies.TryGetValue("UserId", out var userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            await _commentService.AddCommentAsync(id, commentDTO, userId);
             return Ok(commentDTO);
         }
 

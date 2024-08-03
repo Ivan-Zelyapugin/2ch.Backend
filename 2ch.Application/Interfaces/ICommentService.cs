@@ -11,7 +11,7 @@ namespace _2ch.Application.Interfaces
     {
         Task<IEnumerable<CommentDTO>> GetAllCommentAsync();
         Task<CommentDTO> GetCommentByIdAsync(Guid postId);
-        Task AddCommentAsync(Guid id, CommentDTO postDto);
+        Task AddCommentAsync(Guid id, CommentDTO postDto, Guid userId);
         Task UpdateCommentAsync(Guid id, CommentDTO postDto);
         Task DeleteAsync(Guid postId);
     }

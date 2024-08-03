@@ -38,12 +38,13 @@ namespace _2ch.Application.Services
             };
         }
 
-        public async Task AddThreadAsync(Guid id, ThreadDto threadDto)
+        public async Task AddThreadAsync(Guid id, ThreadDto threadDto, Guid userId)
         {
             var thread = new DomainTread
             {
                 ThreadId = Guid.NewGuid(),
                 BoardId = id,
+                UserId = userId,
                 Title = threadDto.Title,
                 Content = threadDto.Content,
                 CreatedAt = threadDto.CreatedAt

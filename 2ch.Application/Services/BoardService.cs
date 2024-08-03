@@ -41,11 +41,12 @@ namespace _2ch.Application.Services
             };
         }
 
-        public async Task AddBoardAsync(BoardDto boardDto)
+        public async Task AddBoardAsync(BoardDto boardDto, Guid id)
         {
             var board = new Board
             {
                 BoardId = Guid.NewGuid(),
+                UserId = id,
                 Name = boardDto.Name,
                 Description = boardDto.Description
             };

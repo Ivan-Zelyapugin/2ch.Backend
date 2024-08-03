@@ -10,6 +10,7 @@ namespace _2ch.Domain.Entities
     {
         public Guid CommentId { get; set; }
         public Guid ThreadId { get; set; }
+        public Guid UserId { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }

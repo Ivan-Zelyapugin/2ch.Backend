@@ -5,6 +5,7 @@ using _2ch.Application.Services;
 using _2ch.Persistence;
 using _2ch.Persistence.Migrations;
 using _2ch.Persistence.Repositories;
+using _2ch.WebApi.Middlewares;
 using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,10 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IThreadRepository, ThreadRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IBoardRepository, BoardRepository>();
+builder.Services.AddScoped<IAnonymousUserRepository, AnonymousUserRepository>();
 
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IBoardService, BoardService>();
 builder.Services.AddScoped<IThreadService, ThreadService>();
+builder.Services.AddScoped<IAnonymousUserService, AnonymousUserService>();
+builder.Services.AddSingleton<RedisCacheService>();
 
 builder.Services.AddScoped<IDbConnectionFactory>(sp =>
                 new NpgsqlConnectionFactory(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -27,6 +31,8 @@ builder.Services.AddScoped<IMigrationService, MigrationService>();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<UserIdMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {

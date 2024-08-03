@@ -33,8 +33,8 @@ namespace _2ch.Persistence.Repositories
         public async Task AddBoardAsync(Board board)
         {
             var sql = @"
-                INSERT INTO board (""BoardId"", ""Name"", ""Description"")
-                VALUES (@BoardId, @Name, @Description)";
+                INSERT INTO board (""BoardId"", ""UserId"", ""Name"", ""Description"")
+                VALUES (@BoardId, @UserId, @Name, @Description)";
             using (var connection = _connectionFactory.CreateConnection())
             {
                 await connection.ExecuteAsync(sql, board);

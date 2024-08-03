@@ -41,12 +41,13 @@ namespace _2ch.Application.Services
             };
         }
 
-        public async Task AddCommentAsync(Guid id, CommentDTO postDto)
+        public async Task AddCommentAsync(Guid id, CommentDTO postDto, Guid userId)
         {
             var post = new Comment
             {
                 CommentId = Guid.NewGuid(),
                 ThreadId = id,
+                UserId = userId,
                 Content = postDto.Content,
                 CreatedAt = postDto.CreatedAt
             };

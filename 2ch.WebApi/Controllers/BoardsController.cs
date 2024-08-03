@@ -34,8 +34,13 @@ namespace _2ch.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddBoard(BoardDto boardDto)
         {
-            await _boardService.AddBoardAsync(boardDto);
-            return Ok(boardDto);        }
+            if (!Request.Cookies.TryGetValue("UserId", out var userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            {
+                return Unauthorized();
+            }
+            await _boardService.AddBoardAsync(boardDto, userId);
+            return Ok(boardDto);        
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBoard(Guid id, BoardDto boardDto)

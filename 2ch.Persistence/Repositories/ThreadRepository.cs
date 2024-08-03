@@ -34,8 +34,8 @@ namespace _2ch.Persistence.Repositories
         public async Task AddThreadAsync(DomainThread thread)
         {
             var sql = @"
-                INSERT INTO thread (""ThreadId"", ""BoardId"", ""Title"", ""Content"", ""CreatedAt"")
-                VALUES (@ThreadId, @BoardId, @Title, @Content, @CreatedAt)";
+                INSERT INTO thread (""ThreadId"", ""BoardId"", ""UserId"", ""Title"", ""Content"", ""CreatedAt"")
+                VALUES (@ThreadId, @BoardId, @UserId, @Title, @Content, @CreatedAt)";
             using (var connection = _connectionFactory.CreateConnection())
             {
                 await connection.ExecuteAsync(sql, thread);

@@ -33,8 +33,8 @@ namespace _2ch.Persistence.Repositories
         public async Task AddCommentAsync(Comment comment)
         {
             var sql = @"
-                INSERT INTO comment (""CommentId"", ""ThreadId"", ""Content"", ""CreatedAt"")
-                VALUES (@CommentId, @ThreadId, @Content, @CreatedAt)";
+                INSERT INTO comment (""CommentId"", ""ThreadId"", ""UserId"", ""Content"", ""CreatedAt"")
+                VALUES (@CommentId, @ThreadId, @UserId, @Content, @CreatedAt)";
             using (var connection = _connectionFactory.CreateConnection())
             {
                 await connection.ExecuteAsync(sql, comment);
