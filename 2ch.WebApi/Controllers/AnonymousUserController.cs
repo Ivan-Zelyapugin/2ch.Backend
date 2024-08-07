@@ -1,9 +1,8 @@
 ﻿using _2ch.Application.Interfaces;
 using _2ch.Domain.Entities;
-using Azure.Core;
-using Azure;
 using Microsoft.AspNetCore.Mvc;
 using _2ch.Application.Services;
+using Microsoft.AspNetCore.Cors;
 
 namespace _2ch.WebApi.Controllers
 {

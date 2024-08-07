@@ -12,14 +12,18 @@ namespace _2ch.Application.Services
         public ThreadService(IThreadRepository threadRepository) =>
             _threadRepository = threadRepository;
 
-        public async Task<IEnumerable<ThreadDto>> GetAllThreadsAsync()
+        public async Task<IEnumerable<DomainTread>> GetAllThreadsAsync(Guid boardId)
         {
-            var threads = await _threadRepository.GetAllThreadsAsync();
-            return threads.Select(t => new ThreadDto
+            var threads = await _threadRepository.GetAllThreadsAsync(boardId);
+            return threads.Select(t => new DomainTread
             {
+                ThreadId = t.ThreadId,
+                BoardId = t.BoardId,
+                UserId = t.UserId,
                 Title = t.Title,
                 Content = t.Content,
-                CreatedAt = t.CreatedAt
+                CreatedAt = t.CreatedAt,
+                FilePath = t.FilePath
             });
         }
 
@@ -33,8 +37,7 @@ namespace _2ch.Application.Services
             return new ThreadDto
             {
                 Title = thread.Title,
-                Content = thread.Content,
-                CreatedAt = thread.CreatedAt
+                Content = thread.Content
             };
         }
 
@@ -47,7 +50,8 @@ namespace _2ch.Application.Services
                 UserId = userId,
                 Title = threadDto.Title,
                 Content = threadDto.Content,
-                CreatedAt = threadDto.CreatedAt
+                CreatedAt = DateTime.UtcNow,
+                FilePath = threadDto.FilePath
             };
             await _threadRepository.AddThreadAsync(thread);
         }
@@ -58,8 +62,7 @@ namespace _2ch.Application.Services
             {
                 ThreadId = id,
                 Title = threadDto.Title,
-                Content = threadDto.Content,
-                CreatedAt = threadDto.CreatedAt
+                Content = threadDto.Content
             };
             await _threadRepository.UpdateThreadAsync(thread);
         }

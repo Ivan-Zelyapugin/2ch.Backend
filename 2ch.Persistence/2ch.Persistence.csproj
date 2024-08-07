@@ -13,6 +13,7 @@
     <EmbeddedResource Include="Migrations\Scripts\002_CreateBoardTable.sql" />
 	<EmbeddedResource Include="Migrations\Scripts\003_CreateThreadTable.sql" />
     <EmbeddedResource Include="Migrations\Scripts\004_CreateCommentTable.sql" />
+    <EmbeddedResource Include="Migrations\Scripts\005_AddFilePathToThreads.sql" />
 
   </ItemGroup>
 

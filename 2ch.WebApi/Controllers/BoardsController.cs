@@ -1,6 +1,6 @@
 ﻿using _2ch.Application.DTOs;
 using _2ch.Application.Interfaces;
-using _2ch.Domain.Entities;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _2ch.WebApi.Controllers

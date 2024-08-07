@@ -17,11 +17,13 @@ namespace _2ch.Application.Services
         public BoardService(IBoardRepository boardRepository) =>
             _boardRepository = boardRepository;
 
-        public async Task<IEnumerable<BoardDto>> GetAllBoardsAsync()
+        public async Task<IEnumerable<Board>> GetAllBoardsAsync()
         {
             var boards = await _boardRepository.GetAllBoardsAsync();
-            return boards.Select(b => new BoardDto
+            return boards.Select(b => new Board
             {
+                BoardId = b.BoardId,
+                UserId = b.UserId,
                 Name = b.Name,
                 Description = b.Description
             });

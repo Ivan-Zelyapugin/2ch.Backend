@@ -6,9 +6,15 @@ using _2ch.Persistence;
 using _2ch.Persistence.Migrations;
 using _2ch.Persistence.Repositories;
 using _2ch.WebApi.Middlewares;
-using Microsoft.Extensions.Configuration;
+using Minio;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<IMinioClient>(sp =>
+    new MinioClient()
+        .WithEndpoint("minio:9000")
+        .WithCredentials("jPGyFNyA12IccwqKId06", "gKO5TS9M4i0lSoVLCrse2krvXy9Xqa55OMXNrBFQ")
+        .Build());
 
 builder.Services.AddScoped<IThreadRepository, ThreadRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
@@ -24,6 +30,16 @@ builder.Services.AddSingleton<RedisCacheService>();
 builder.Services.AddScoped<IDbConnectionFactory>(sp =>
                 new NpgsqlConnectionFactory(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder
+            .WithOrigins("http://localhost:5173") 
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
+
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IMigrationService, MigrationService>();
@@ -31,6 +47,8 @@ builder.Services.AddScoped<IMigrationService, MigrationService>();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseCors("AllowSpecificOrigin");
 
 app.UseMiddleware<UserIdMiddleware>();
 

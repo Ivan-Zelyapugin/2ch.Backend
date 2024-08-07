@@ -1,6 +1,11 @@
 ﻿using _2ch.Application.DTOs;
 using _2ch.Application.Interfaces;
+using Azure.Core;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Minio;
+using Minio.DataModel.Args;
+using System.Security.AccessControl;
 
 namespace _2ch.WebApi.Controllers
 {
@@ -9,14 +14,19 @@ namespace _2ch.WebApi.Controllers
     public class ThreadsController : ControllerBase
     {
         private readonly IThreadService _threadService;
+        private readonly IMinioClient _minioClient;
+        private const string _bucketName = "filestorage";
 
-        public ThreadsController(IThreadService threadService) =>
+        public ThreadsController(IMinioClient minioClient, IThreadService threadService)
+        {
+            _minioClient = minioClient;
             _threadService = threadService;
+        }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllThreads()
+        public async Task<IActionResult> GetAllThreads(Guid boardId)
         {
-            var threads = await _threadService.GetAllThreadsAsync();
+            var threads = await _threadService.GetAllThreadsAsync(boardId);
             return Ok(threads);
         }
 
@@ -32,14 +42,38 @@ namespace _2ch.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddThread(Guid id, ThreadDto threadDto)
+        public async Task<IActionResult> AddThread(Guid boardId, [FromForm] ThreadDto threadDto, IFormFile file)
         {
             if (!Request.Cookies.TryGetValue("UserId", out var userIdStr) || !Guid.TryParse(userIdStr, out var userId))
             {
                 return Unauthorized();
             }
 
-            await _threadService.AddThreadAsync(id, threadDto, userId);
+            if (file != null)
+            {
+                var fileName = file.FileName;
+                var objectName = file.FileName;
+
+                bool found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(_bucketName));
+                if (!found)
+                {
+                    await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(_bucketName));
+                }
+
+                using (var stream = file.OpenReadStream())
+                {
+                    await _minioClient.PutObjectAsync(new PutObjectArgs()
+                        .WithBucket(_bucketName)
+                        .WithObject(objectName)
+                        .WithStreamData(stream)
+                        .WithObjectSize(stream.Length)
+                        .WithContentType(file.ContentType));
+                }
+
+                threadDto.FilePath = $"/{_bucketName}/{objectName}";
+            }
+
+            await _threadService.AddThreadAsync(boardId, threadDto, userId);
             return Ok(threadDto);
         }
 

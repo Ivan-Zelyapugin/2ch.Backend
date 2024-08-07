@@ -1,6 +1,7 @@
 ﻿using _2ch.Application.DbConnection;
 using _2ch.Application.DTOs;
 using _2ch.Application.Repositories;
+using _2ch.Domain.Entities;
 using Dapper;
 using DomainThread = _2ch.Domain.Entities.Thread;
 
@@ -13,12 +14,12 @@ namespace _2ch.Persistence.Repositories
         public ThreadRepository(IDbConnectionFactory connectionFactory) =>
             _connectionFactory = connectionFactory;
 
-        public async Task<IEnumerable<DomainThread>> GetAllThreadsAsync()
+        public async Task<IEnumerable<DomainThread>> GetAllThreadsAsync(Guid boardId)
         {
-            var sql = "SELECT * FROM thread";
+            var sql = "SELECT * FROM thread WHERE \"BoardId\" = @BoardId";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                return await connection.QueryAsync<DomainThread>(sql);
+                return await connection.QueryAsync<DomainThread>(sql, new { BoardId = boardId });
             }
         }
 
@@ -34,8 +35,8 @@ namespace _2ch.Persistence.Repositories
         public async Task AddThreadAsync(DomainThread thread)
         {
             var sql = @"
-                INSERT INTO thread (""ThreadId"", ""BoardId"", ""UserId"", ""Title"", ""Content"", ""CreatedAt"")
-                VALUES (@ThreadId, @BoardId, @UserId, @Title, @Content, @CreatedAt)";
+                INSERT INTO thread (""ThreadId"", ""BoardId"", ""UserId"", ""Title"", ""Content"", ""CreatedAt"", ""filepath"")
+                VALUES (@ThreadId, @BoardId, @UserId, @Title, @Content, @CreatedAt, @FilePath)";
             using (var connection = _connectionFactory.CreateConnection())
             {
                 await connection.ExecuteAsync(sql, thread);
@@ -46,7 +47,7 @@ namespace _2ch.Persistence.Repositories
         {
             var sql = @"
                 UPDATE thread
-                SET ""Title"" = @Title, ""Content"" = @Content, ""CreatedAt"" = @CreatedAt
+                SET ""Title"" = @Title, ""Content"" = @Content
                 WHERE ""ThreadId"" = @ThreadId";
             using (var connection = _connectionFactory.CreateConnection())
             {
