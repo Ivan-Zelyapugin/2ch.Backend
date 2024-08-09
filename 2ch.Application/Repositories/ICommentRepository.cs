@@ -9,7 +9,7 @@ namespace _2ch.Application.Repositories
 {
     public interface ICommentRepository
     {
-        Task<IEnumerable<Comment>> GetAllCommentsAsync();
+        Task<IEnumerable<Comment>> GetAllCommentsAsync(Guid threadId);
         Task<Comment> GetCommentByIdAsync(Guid id);
         Task AddCommentAsync(Comment comment);
         Task UpdateCommentAsync(Comment comment);

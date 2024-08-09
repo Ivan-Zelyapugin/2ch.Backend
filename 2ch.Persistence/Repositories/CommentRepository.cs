@@ -12,18 +12,18 @@ namespace _2ch.Persistence.Repositories
         public CommentRepository(IDbConnectionFactory connectionFactory) =>
             _connectionFactory = connectionFactory;
 
-        public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
+        public async Task<IEnumerable<Comment>> GetAllCommentsAsync(Guid threadId)
         {
-            var sql = "SELECT * FROM comment";
+            var sql = "SELECT * FROM comment WHERE \"ThreadId\" = @ThreadId";
             using (var connection = _connectionFactory.CreateConnection())
             {
-                return await connection.QueryAsync<Comment>(sql);
+                return await connection.QueryAsync<Comment>(sql, new { ThreadId = threadId });
             }
         }
 
         public async Task<Comment> GetCommentByIdAsync(Guid commentId)
         {
-            var sql = "SELECT * FROM comment WHERE \"CommentId \" = @CommentId ";
+            var sql = "SELECT * FROM comment WHERE \"CommentId\" = @CommentId";
             using (var connection = _connectionFactory.CreateConnection())
             {
                 return await connection.QuerySingleOrDefaultAsync<Comment>(sql, new { CommentId = commentId });
@@ -33,8 +33,8 @@ namespace _2ch.Persistence.Repositories
         public async Task AddCommentAsync(Comment comment)
         {
             var sql = @"
-                INSERT INTO comment (""CommentId"", ""ThreadId"", ""UserId"", ""Content"", ""CreatedAt"")
-                VALUES (@CommentId, @ThreadId, @UserId, @Content, @CreatedAt)";
+                INSERT INTO comment (""CommentId"", ""ThreadId"", ""UserId"", ""Content"", ""CreatedAt"", ""filepath"", ParentCommentId)
+                VALUES (@CommentId, @ThreadId, @UserId, @Content, @CreatedAt, @FilePath, @ParentCommentId)";
             using (var connection = _connectionFactory.CreateConnection())
             {
                 await connection.ExecuteAsync(sql, comment);
@@ -60,6 +60,6 @@ namespace _2ch.Persistence.Repositories
             {
                 await connection.ExecuteAsync(sql, new { CommentId = commentId });
             }
-        }   
+        }
     }
 }

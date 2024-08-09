@@ -9,7 +9,7 @@ namespace _2ch.Domain.Entities
         public Guid UserId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
-        public string FilePath { get; set; } = string.Empty;
+        public string? FilePath { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using _2ch.Application.DTOs;
+using _2ch.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace _2ch.Application.Interfaces
 {
     public interface ICommentService
     {
-        Task<IEnumerable<CommentDTO>> GetAllCommentAsync();
+        Task<IEnumerable<Comment>> GetAllCommentAsync(Guid threadId);
         Task<CommentDTO> GetCommentByIdAsync(Guid postId);
         Task AddCommentAsync(Guid id, CommentDTO postDto, Guid userId);
         Task UpdateCommentAsync(Guid id, CommentDTO postDto);

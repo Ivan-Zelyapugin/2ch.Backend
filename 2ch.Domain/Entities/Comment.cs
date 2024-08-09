@@ -13,5 +13,9 @@ namespace _2ch.Domain.Entities
         public Guid UserId { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public string? FilePath { get; set; } = string.Empty;
+
+        // Новое поле для поддержки вложенных комментариев
+        public Guid? ParentCommentId { get; set; }
     }
 }

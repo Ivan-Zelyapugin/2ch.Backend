@@ -17,13 +17,18 @@ namespace _2ch.Application.Services
         public CommentService(ICommentRepository commentRepository) =>
             _commentRepository = commentRepository;
 
-        public async Task<IEnumerable<CommentDTO>> GetAllCommentAsync()
+        public async Task<IEnumerable<Comment>> GetAllCommentAsync(Guid threadId)
         {
-            var posts = await _commentRepository.GetAllCommentsAsync();
-            return posts.Select(p => new CommentDTO
+            var posts = await _commentRepository.GetAllCommentsAsync(threadId);
+            return posts.Select(p => new Comment
             {
+                CommentId = p.CommentId,
+                ThreadId = p.ThreadId,
+                UserId = p.UserId,
+                FilePath = p.FilePath,
                 Content = p.Content,
-                CreatedAt = p.CreatedAt
+                CreatedAt = p.CreatedAt,
+                ParentCommentId = p.ParentCommentId
             });
         }
 
@@ -37,7 +42,6 @@ namespace _2ch.Application.Services
             return new CommentDTO
             {
                 Content = post.Content,
-                CreatedAt = post.CreatedAt
             };
         }
 
@@ -47,9 +51,11 @@ namespace _2ch.Application.Services
             {
                 CommentId = Guid.NewGuid(),
                 ThreadId = id,
+                ParentCommentId = postDto.ParentCommentId,
                 UserId = userId,
                 Content = postDto.Content,
-                CreatedAt = postDto.CreatedAt
+                CreatedAt = DateTime.UtcNow,
+                FilePath = postDto.FilePath
             };
             await _commentRepository.AddCommentAsync(post);
         }
@@ -60,7 +66,6 @@ namespace _2ch.Application.Services
             {
                 CommentId = id,
                 Content = postDto.Content,
-                CreatedAt = postDto.CreatedAt
             };
             await _commentRepository.UpdateCommentAsync(post);
         }

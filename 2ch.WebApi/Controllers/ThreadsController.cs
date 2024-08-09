@@ -42,7 +42,7 @@ namespace _2ch.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddThread(Guid boardId, [FromForm] ThreadDto threadDto, IFormFile file)
+        public async Task<IActionResult> AddThread(Guid boardId, [FromForm] ThreadDto threadDto, IFormFile? file)
         {
             if (!Request.Cookies.TryGetValue("UserId", out var userIdStr) || !Guid.TryParse(userIdStr, out var userId))
             {
@@ -87,7 +87,21 @@ namespace _2ch.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteThread(Guid id)
         {
+            var file = await _threadService.GetThreadByIdAsync(id);
+
+            string filePath = file.FilePath;
+
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                string fileName = Path.GetFileName(filePath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    await _minioClient.RemoveObjectAsync(new RemoveObjectArgs().WithBucket(_bucketName).WithObject(fileName));
+                }
+            }         
+            
             await _threadService.DeleteThreadAsync(id);
+
             return NoContent();
         }
     }

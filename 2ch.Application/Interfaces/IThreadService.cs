@@ -5,7 +5,7 @@ namespace _2ch.Application.Interfaces
     public interface IThreadService
     {
         Task<IEnumerable<DomainTread>> GetAllThreadsAsync(Guid boardId);
-        Task<ThreadDto> GetThreadByIdAsync(Guid threadId);
+        Task<DomainTread> GetThreadByIdAsync(Guid threadId);
         Task AddThreadAsync(Guid id, ThreadDto threadDto, Guid userId);
         Task UpdateThreadAsync(Guid id, ThreadDto threadDto);
         Task DeleteThreadAsync(Guid threadId);

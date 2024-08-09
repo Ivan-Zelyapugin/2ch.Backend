@@ -27,17 +27,22 @@ namespace _2ch.Application.Services
             });
         }
 
-        public async Task<ThreadDto> GetThreadByIdAsync(Guid threadId)
+        public async Task<DomainTread> GetThreadByIdAsync(Guid threadId)
         {
             var thread = await _threadRepository.GetThreadByIdAsync(threadId);
             if (thread == null)
             {
                 return null;
             }
-            return new ThreadDto
+            return new DomainTread
             {
+                ThreadId = thread.ThreadId,
+                BoardId = thread.BoardId,
+                UserId = thread.UserId,
                 Title = thread.Title,
-                Content = thread.Content
+                Content = thread.Content,
+                CreatedAt = thread.CreatedAt,
+                FilePath = thread.FilePath
             };
         }
 
