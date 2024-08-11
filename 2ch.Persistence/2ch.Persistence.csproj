@@ -14,6 +14,7 @@
     <EmbeddedResource Include="Migrations\Scripts\004_CreateCommentTable.sql" />
     <EmbeddedResource Include="Migrations\Scripts\005_AddFilePathToThreads.sql" />
     <EmbeddedResource Include="Migrations\Scripts\006_AddNestedCommentToComments.sql" />
+    <EmbeddedResource Include="Migrations\Scripts\007_AddHashToUser.sql" />
 
   </ItemGroup>
 

@@ -1,11 +1,10 @@
 ﻿using _2ch.Application.DTOs;
 using _2ch.Application.Interfaces;
-using Azure.Core;
-using Microsoft.AspNetCore.Cors;
+using _2ch.Application.Services;
+using _2ch.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Minio;
 using Minio.DataModel.Args;
-using System.Security.AccessControl;
 
 namespace _2ch.WebApi.Controllers
 {
@@ -15,12 +14,19 @@ namespace _2ch.WebApi.Controllers
     {
         private readonly IThreadService _threadService;
         private readonly IMinioClient _minioClient;
+        private readonly IHashingService _hashingService;
+        private readonly IAnonymousUserService _anonymousUserService;
+        private readonly RedisCacheService _redisCacheService;
         private const string _bucketName = "filestorage";
 
-        public ThreadsController(IMinioClient minioClient, IThreadService threadService)
+        public ThreadsController(IMinioClient minioClient, IThreadService threadService, 
+            IAnonymousUserService anonymousUserService, IHashingService hashingService, RedisCacheService redisCacheService)
         {
             _minioClient = minioClient;
             _threadService = threadService;
+            _anonymousUserService = anonymousUserService;
+            _redisCacheService = redisCacheService;
+            _hashingService = hashingService;
         }
 
         [HttpGet]
@@ -44,9 +50,27 @@ namespace _2ch.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddThread(Guid boardId, [FromForm] ThreadDto threadDto, IFormFile? file)
         {
-            if (!Request.Cookies.TryGetValue("UserId", out var userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+            var salt = _hashingService.GenerateDeterministicSalt(ipAddress);
+            var userHash = _hashingService.GenerateHash(ipAddress, salt);
+
+            var cachedUser = await _redisCacheService.GetCacheValueAsync(userHash);
+
+            AnonymousUser user;
+            if (string.IsNullOrEmpty(cachedUser))
             {
-                return Unauthorized();
+                user = await _anonymousUserService.GetUserByHashAsync(userHash);
+
+                if (user == null)
+                {
+                    return Unauthorized("User not found.");
+                }
+
+                await _redisCacheService.SetCacheValueAsync(userHash, user.UserId.ToString());
+            }
+            else
+            {
+                user = await _anonymousUserService.GetUserByIdAsync(Guid.Parse(cachedUser));
             }
 
             if (file != null)
@@ -73,7 +97,7 @@ namespace _2ch.WebApi.Controllers
                 threadDto.FilePath = $"/{_bucketName}/{objectName}";
             }
 
-            await _threadService.AddThreadAsync(boardId, threadDto, userId);
+            await _threadService.AddThreadAsync(boardId, threadDto, user.UserId);
             return Ok(threadDto);
         }
 

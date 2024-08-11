@@ -5,7 +5,6 @@ using _2ch.Application.Services;
 using _2ch.Persistence;
 using _2ch.Persistence.Migrations;
 using _2ch.Persistence.Repositories;
-using _2ch.WebApi.Middlewares;
 using Minio;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +19,7 @@ builder.Services.AddScoped<IThreadRepository, ThreadRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IBoardRepository, BoardRepository>();
 builder.Services.AddScoped<IAnonymousUserRepository, AnonymousUserRepository>();
+builder.Services.AddScoped<IHashingService, HashingService>();
 
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IBoardService, BoardService>();
@@ -50,7 +50,6 @@ var app = builder.Build();
 
 app.UseCors("AllowSpecificOrigin");
 
-app.UseMiddleware<UserIdMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {

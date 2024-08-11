@@ -10,6 +10,7 @@ namespace _2ch.Application.Interfaces
     public interface IAnonymousUserService
     {
         Task<AnonymousUser> GetUserByIdAsync(Guid userId);
+        Task<AnonymousUser> GetUserByHashAsync(string hash);
         Task AddUserAsync(AnonymousUser user);
     }
 }

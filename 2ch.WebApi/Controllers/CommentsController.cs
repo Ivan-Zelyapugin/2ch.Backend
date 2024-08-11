@@ -1,6 +1,7 @@
 ﻿using _2ch.Application.DTOs;
 using _2ch.Application.Interfaces;
 using _2ch.Application.Services;
+using _2ch.Domain.Entities;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Minio;
@@ -14,12 +15,19 @@ namespace _2ch.WebApi.Controllers
     {
         private readonly ICommentService _commentService;
         private readonly IMinioClient _minioClient;
+        private readonly IHashingService _hashingService;
+        private readonly IAnonymousUserService _anonymousUserService;
+        private readonly RedisCacheService _redisCacheService;
         private const string _bucketName = "filestorage";
 
-        public CommentsController(ICommentService commentService, IMinioClient minioClient)
+        public CommentsController(ICommentService commentService, IMinioClient minioClient, 
+            IHashingService hashingService, IAnonymousUserService anonymousUserService, RedisCacheService redisCacheService)
         {
             _commentService = commentService;
             _minioClient = minioClient;
+            _hashingService = hashingService;
+            _anonymousUserService = anonymousUserService;
+            _redisCacheService = redisCacheService;
         }
             
 
@@ -43,9 +51,27 @@ namespace _2ch.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddComment(Guid id, [FromForm] CommentDTO commentDTO, IFormFile? file)
         {
-            if (!Request.Cookies.TryGetValue("UserId", out var userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+            var salt = _hashingService.GenerateDeterministicSalt(ipAddress);
+            var userHash = _hashingService.GenerateHash(ipAddress, salt);
+
+            var cachedUser = await _redisCacheService.GetCacheValueAsync(userHash);
+
+            AnonymousUser user;
+            if (string.IsNullOrEmpty(cachedUser))
             {
-                return Unauthorized();
+                user = await _anonymousUserService.GetUserByHashAsync(userHash);
+
+                if (user == null)
+                {
+                    return Unauthorized("User not found.");
+                }
+
+                await _redisCacheService.SetCacheValueAsync(userHash, user.UserId.ToString());
+            }
+            else
+            {
+                user = await _anonymousUserService.GetUserByIdAsync(Guid.Parse(cachedUser));
             }
 
             if (file != null)
@@ -72,7 +98,7 @@ namespace _2ch.WebApi.Controllers
                 commentDTO.FilePath = $"/{_bucketName}/{objectName}";
             }
 
-            await _commentService.AddCommentAsync(id, commentDTO, userId);
+            await _commentService.AddCommentAsync(id, commentDTO, user.UserId);
             return Ok(commentDTO);
         }
 

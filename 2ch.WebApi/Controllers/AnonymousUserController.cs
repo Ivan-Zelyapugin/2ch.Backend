@@ -1,8 +1,6 @@
 ﻿using _2ch.Application.Interfaces;
 using _2ch.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using _2ch.Application.Services;
-using Microsoft.AspNetCore.Cors;
 
 namespace _2ch.WebApi.Controllers
 {
@@ -11,50 +9,29 @@ namespace _2ch.WebApi.Controllers
     public class AnonymousUserController : ControllerBase
     {
         private readonly IAnonymousUserService _anonymousUserService;
-        private readonly RedisCacheService _redisCacheService;
+        private readonly IHashingService _hashingService;
 
-        public AnonymousUserController(IAnonymousUserService anonymousUserService, RedisCacheService redisCacheService)
+        public AnonymousUserController(IAnonymousUserService anonymousUserService, IHashingService hashingService)
         {
             _anonymousUserService = anonymousUserService;
-            _redisCacheService = redisCacheService;
+            _hashingService = hashingService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetOrCreateUser()
         {
-            Guid userId;
-            if (!Request.Cookies.TryGetValue("UserId", out var userIdStr) || !Guid.TryParse(userIdStr, out userId))
-            {
-                userId = Guid.NewGuid();
-                Response.Cookies.Append("UserId", userId.ToString(), new CookieOptions
-                {
-                    HttpOnly = true,
-                    Expires = DateTimeOffset.UtcNow.AddYears(1)
-                });
+            var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+            var salt = _hashingService.GenerateDeterministicSalt(ipAddress);
+            var userHash = _hashingService.GenerateHash(ipAddress, salt);
 
-                var user = new AnonymousUser { UserId = userId };
+            var user = await _anonymousUserService.GetUserByHashAsync(userHash);
+            if (user == null)
+            {
+                user = new AnonymousUser { UserId = Guid.NewGuid(), Hash = userHash };
                 await _anonymousUserService.AddUserAsync(user);
-                await _redisCacheService.SetCacheValueAsync(userId.ToString(), userId.ToString());
-            }
-            else
-            {
-                var cachedUser = await _redisCacheService.GetCacheValueAsync(userId.ToString());
-                if (string.IsNullOrEmpty(cachedUser))
-                {
-                    var existingUser = await _anonymousUserService.GetUserByIdAsync(userId);
-
-                    if (existingUser == null)
-                    {
-                        var user = new AnonymousUser { UserId = userId };
-                        await _anonymousUserService.AddUserAsync(user);
-                    }
-
-                    await _redisCacheService.SetCacheValueAsync(userId.ToString(), userId.ToString());
-                }
             }
 
-            var createdUser = await _anonymousUserService.GetUserByIdAsync(userId);
-            return Ok(createdUser);
+            return Ok(user);
         }
     }
 }

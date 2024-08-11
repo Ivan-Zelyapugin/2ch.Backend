@@ -9,5 +9,6 @@ namespace _2ch.Domain.Entities
     public class AnonymousUser
     {
         public Guid UserId { get; set; }
+        public string Hash { get; set; } = string.Empty;
     }
 }

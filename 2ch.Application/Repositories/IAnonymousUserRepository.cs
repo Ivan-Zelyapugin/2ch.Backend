@@ -11,5 +11,6 @@ namespace _2ch.Application.Repositories
     {
         Task<AnonymousUser> GetUserByIdAsync(Guid userId);
         Task AddUserAsync(AnonymousUser user);
+        Task<AnonymousUser> GetUserByHashAsync(string hash);
     }
 }

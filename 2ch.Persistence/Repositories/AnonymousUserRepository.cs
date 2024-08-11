@@ -2,8 +2,6 @@
 using _2ch.Application.Repositories;
 using _2ch.Domain.Entities;
 using Dapper;
-using DbUp.Engine.Transactions;
-using Microsoft.Extensions.Configuration;
 
 
 namespace _2ch.Persistence.Repositories
@@ -26,10 +24,19 @@ namespace _2ch.Persistence.Repositories
 
         public async Task AddUserAsync(AnonymousUser user)
         {
-            var sql = "INSERT INTO AnonymousUsers (\"UserId\") VALUES (@UserId)";
+            var sql = "INSERT INTO AnonymousUsers (\"UserId\", \"Hash\") VALUES (@UserId, @Hash)";
             using (var connection = _connectionString.CreateConnection())
             {
                 await connection.ExecuteAsync(sql, user);
+            }
+        }
+
+        public async Task<AnonymousUser> GetUserByHashAsync(string hash)
+        {
+            string sql = "SELECT * FROM AnonymousUsers WHERE \"Hash\" = @Hash";
+            using (var connection = _connectionString.CreateConnection())
+            {               
+                return await connection.QueryFirstOrDefaultAsync<AnonymousUser>(sql, new { Hash = hash });
             }
         }
     }

@@ -1,0 +1,1 @@
+﻿ALTER TABLE AnonymousUsers ADD "Hash" TEXT;

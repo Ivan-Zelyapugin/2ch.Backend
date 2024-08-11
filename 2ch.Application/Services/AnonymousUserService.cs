@@ -16,6 +16,11 @@ namespace _2ch.Application.Services
             return await _anonymousUserRepository.GetUserByIdAsync(userId);
         }
 
+        public async Task<AnonymousUser> GetUserByHashAsync(string hash)
+        {
+            return await _anonymousUserRepository.GetUserByHashAsync(hash);
+        }
+
         public async Task AddUserAsync(AnonymousUser user)
         {
             await _anonymousUserRepository.AddUserAsync(user);

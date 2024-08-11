@@ -1,7 +1,10 @@
 ﻿using _2ch.Application.DTOs;
 using _2ch.Application.Interfaces;
-using Microsoft.AspNetCore.Cors;
+using _2ch.Application.Services;
+using _2ch.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace _2ch.WebApi.Controllers
 {
@@ -10,8 +13,18 @@ namespace _2ch.WebApi.Controllers
     public class BoardsController : ControllerBase
     {
         private readonly IBoardService _boardService;
-        public BoardsController(IBoardService boardService) =>
+        private readonly IHashingService _hashingService;
+        private readonly IAnonymousUserService _anonymousUserService;
+        private readonly RedisCacheService _redisCacheService;
+        public BoardsController(IAnonymousUserService anonymousUserService, IBoardService boardService, 
+            IHashingService hashingService, RedisCacheService redisCacheService)
+        {
             _boardService = boardService;
+            _hashingService = hashingService;
+            _anonymousUserService = anonymousUserService;
+            _redisCacheService = redisCacheService;
+
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAllBoards()
@@ -34,11 +47,30 @@ namespace _2ch.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddBoard(BoardDto boardDto)
         {
-            if (!Request.Cookies.TryGetValue("UserId", out var userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+            var salt = _hashingService.GenerateDeterministicSalt(ipAddress);
+            var userHash = _hashingService.GenerateHash(ipAddress, salt);
+
+            var cachedUser = await _redisCacheService.GetCacheValueAsync(userHash);
+
+            AnonymousUser user;
+            if (string.IsNullOrEmpty(cachedUser))
             {
-                return Unauthorized();
+                user = await _anonymousUserService.GetUserByHashAsync(userHash);
+
+                if (user == null)
+                {
+                    return Unauthorized("User not found.");
+                }
+
+                await _redisCacheService.SetCacheValueAsync(userHash, user.UserId.ToString());
             }
-            await _boardService.AddBoardAsync(boardDto, userId);
+            else
+            {
+                user = await _anonymousUserService.GetUserByIdAsync(Guid.Parse(cachedUser));
+            }
+
+            await _boardService.AddBoardAsync(boardDto, user.UserId);
             return Ok(boardDto);        
         }
 
@@ -54,6 +86,25 @@ namespace _2ch.WebApi.Controllers
         {
             await _boardService.DeleteBoardAsync(id);
             return NoContent();
+        }
+
+        private string GenerateSalt(string ipAddress)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] saltBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(ipAddress));
+                return Convert.ToBase64String(saltBytes);
+            }
+        }
+
+        private string GenerateHash(string ipAddress, string salt)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var combinedString = $"{ipAddress}{salt}";
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedString));
+                return Convert.ToBase64String(bytes);
+            }
         }
     }
 }
